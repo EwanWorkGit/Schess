@@ -14,6 +14,10 @@ public class BoardManager : MonoBehaviour
     private void Awake()
     {
         Instance = this;
+    }
+
+    private void Start()
+    {
         SetBoard();
     }
 
