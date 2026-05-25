@@ -5,7 +5,9 @@ using UnityEngine;
 
 public class WinManager : MonoBehaviour
 {
-    Dictionary<Team, List<Piece>> KingsInTeam = new Dictionary<Team, List<Piece>>();
+    [SerializeField] GameObject Winscreen;
+
+    Dictionary<Team, List<Piece>> KingsInEachTeam = new Dictionary<Team, List<Piece>>();
 
     private void Start()
     {
@@ -14,14 +16,46 @@ public class WinManager : MonoBehaviour
         
         foreach(Team team in System.Enum.GetValues(typeof(Team)))
         {
-            KingsInTeam.Add(team, new List<Piece>(allPieces.Where(k => k.CurrentTeam == team && k.CurrentPieceType == PieceType.King).ToList()));
+            KingsInEachTeam.Add(team, new List<Piece>(allPieces.Where(k => k.CurrentTeam == team && k.CurrentPieceType == PieceType.King).ToList()));
+        }
+    }
+
+    private void Update()
+    {
+        //checking lost teams
+        List<Team> teamsToRemove = new();
+        foreach (var keyValue in KingsInEachTeam)
+        {
+            for(int i = keyValue.Value.Count - 1; i >= 0; i--)
+            {
+                if (keyValue.Value[i] == null)
+                {
+                    keyValue.Value.RemoveAt(i);
+                    Debug.Log(keyValue.Value.Count);
+                }
+            }
+            
+            if (keyValue.Value.Count <= 0)
+            {
+                teamsToRemove.Add(keyValue.Key);
+                //this team has lost
+                //count active teams, when it reaches one, display that team
+            }
         }
 
-        foreach(var keyValue in KingsInTeam)
+        //removal
+        foreach(Team team in teamsToRemove)
         {
-            foreach(Piece piece in keyValue.Value)
+            KingsInEachTeam.Remove(team);
+            Debug.Log(team + " removed");
+        }
+
+        if(KingsInEachTeam.Count <= 1)
+        {
+            //one team has won, display it.
+            foreach(var keyValue in KingsInEachTeam)
             {
-                Debug.Log($"{keyValue.Key} : {piece.transform.name}");
+                Debug.Log($"{keyValue.Key} has won!");
             }
         }
     }
