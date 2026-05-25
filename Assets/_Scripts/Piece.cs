@@ -1,14 +1,16 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+public enum PieceType { Pawn, Bishop, King, Queen, Knight, Rook, Pope }
+
 public class Piece : MonoBehaviour
 {
-    public enum PieceType { Pawn, Bishop, King, Queen, Knight, Rook, Pope }
     enum MoveType { Directional, Positional }
 
     public Team CurrentTeam;
     public PieceType CurrentPieceType;    
     public BoardTile CurrentTile;
+    public SpriteRenderer Renderer;
     MoveType CurrentMoveType;
 
     Vector2Int[] Directions;
@@ -27,9 +29,12 @@ public class Piece : MonoBehaviour
         {
             CurrentTile.OccupyingPiece = this;
         }
+
+        
+        transform.name = $"{CurrentPieceType.ToString()} : {CurrentTeam.ToString()}";
     }
 
-    void SetMoves()
+    public void SetMoves()
     {
         //DIRECTIONAL
         if (CurrentPieceType == PieceType.Pawn)
@@ -127,12 +132,25 @@ public class Piece : MonoBehaviour
 
         if(CurrentMoveType == MoveType.Directional)
         {
+            if(CurrentPieceType == PieceType.Pawn)
+            {
+                Vector2Int[] offsets = new Vector2Int[] { new Vector2Int(1,1), new Vector2Int(-1,1) };
+                foreach(Vector2Int offset in offsets)
+                {
+                    Vector2Int pos = startTile.GridPos + (CurrentTeam == Team.Black ? -offset : offset);
+                    if(IsInsideBounds(0, boardManager.Tiles.GetLength(0), 0, boardManager.Tiles.GetLength(1), pos) && boardManager.Tiles[pos.x,pos.y].OccupyingPiece != null)
+                    {
+                        validPositions.Add(pos);
+                    }
+                }
+            }
+
             foreach (Vector2Int dir in Directions)
             {
                 for (int i = 1; i <= Steps; i++)
                 {
                     Vector2Int pos = startTile.GridPos + (dir * i);
-                    if (pos.x < 0 || pos.x >= boardManager.Tiles.GetLength(0) || pos.y < 0 || pos.y >= boardManager.Tiles.GetLength(1))
+                    if (!IsInsideBounds(0, boardManager.Tiles.GetLength(0), 0, boardManager.Tiles.GetLength(1), pos))
                     {
                         break;
                     }
@@ -173,7 +191,6 @@ public class Piece : MonoBehaviour
             }
         }
         
-        
         return validPositions.ToArray();
     }
 
@@ -189,5 +206,11 @@ public class Piece : MonoBehaviour
                 return;
             }
         }
+    }
+
+    bool IsInsideBounds(int minX, int maxX, int minY, int maxY, Vector2Int vec)
+    {
+        bool insideBounds = vec.x >= 0 && vec.x < maxX && vec.y >= 0 && vec.y < maxY;
+        return insideBounds;
     }
 }

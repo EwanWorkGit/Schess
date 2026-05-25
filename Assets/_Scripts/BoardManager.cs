@@ -7,9 +7,11 @@ public class BoardManager : MonoBehaviour
     public static BoardManager Instance;
     public BoardTile[,] Tiles;
 
+    [SerializeField] GameObject PiecePrefab;
     [SerializeField] Transform TileHolder;
     [SerializeField] Color EvenColor, OddColor;
-    
+
+    PieceCache[] PieceCache; //piece info to load upon reload
 
     private void Awake()
     {
@@ -19,6 +21,15 @@ public class BoardManager : MonoBehaviour
     private void Start()
     {
         SetBoard();
+        Piece[] allPieces = FindObjectsOfType<Piece>();
+        PieceCache = new PieceCache[allPieces.Length];
+        for(int i = 0; i < allPieces.Length; i++)
+        {
+            PieceCache[i].Team = allPieces[i].CurrentTeam;
+            PieceCache[i].PieceType = allPieces[i].CurrentPieceType;
+            PieceCache[i].CurrentTile = allPieces[i].CurrentTile;
+            PieceCache[i].Color = allPieces[i].GetComponent<SpriteRenderer>().color;
+        }
     }
 
     void SetBoard()
@@ -73,9 +84,36 @@ public class BoardManager : MonoBehaviour
                 newTile.OccupyingPiece = piece;
                 piece.CurrentTile = newTile;
                 piece.transform.position = newTile.transform.position;
-                TurnManager.Instance.ChangeTeam();
+                TurnManager.Instance.ChangeTeam(false);
                 return;
             }
         }
+    }
+    public void ResetPieces()
+    {
+        //Destroys all pieces
+        foreach(Piece piece in FindObjectsOfType<Piece>())
+        {
+            DestroyImmediate(piece.gameObject);
+        }
+
+        TurnManager.Instance.ResetTurn();
+
+        //Makes new copies
+        for(int i = 0; i < PieceCache.Length; i++)
+        {
+            GameObject pieceObj = Instantiate(PiecePrefab, PieceCache[i].CurrentTile.transform.position, Quaternion.identity);
+            Piece piece = pieceObj.GetComponent<Piece>();
+            piece.CurrentPieceType = PieceCache[i].PieceType;
+            piece.CurrentTile = PieceCache[i].CurrentTile;
+            piece.CurrentTeam = PieceCache[i].Team;
+            piece.Renderer.color = PieceCache[i].Color;
+
+            piece.SetMoves();
+
+            piece.CurrentTile.OccupyingPiece = piece;
+        }
+
+        PieceManager.Instance.DeselectPiece();
     }
 }
