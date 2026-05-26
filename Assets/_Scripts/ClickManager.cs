@@ -17,7 +17,12 @@ public class ClickManager : MonoBehaviour
 
     private void Update()
     {
-        if(PieceManager == null)
+        if (!WinManager.Instance.GameActive)
+        {
+            return;
+        }
+
+        if (PieceManager == null)
         {
             Debug.LogWarning("Piece Manager is null!");
         }
@@ -47,7 +52,7 @@ public class ClickManager : MonoBehaviour
             }
 
             //capture or select
-            if(clickedPiece != null && clickedTile != null)
+            if (clickedPiece != null && clickedTile != null)
             {
                 //select
                 if (clickedPiece.CurrentTeam == TurnManager.Instance.ActiveTeam)
@@ -68,75 +73,12 @@ public class ClickManager : MonoBehaviour
                 }
             }
             //move
-            else if(clickedPiece == null && clickedTile != null)
+            else if (clickedPiece == null && clickedTile != null)
             {
                 if (PieceManager.SelectedPiece != null)
                 {
                     //move selected piece to clicked tile
                     BoardManager.MovePieceToTile(clickedTile, PieceManager.SelectedPiece);
-                    PieceManager.DeselectPiece();
-                }
-            }
-
-            //OLD
-            /*
-            if (pieceHit.transform != null)
-            {
-                if (pieceHit.transform.TryGetComponent(out Piece piece))
-                {
-                    //to prevent multiple different pieces' clicks from stacking
-                    if (piece.CurrentTeam == TurnManager.Instance.ActiveTeam)
-                    {
-                        //selecting new piece
-                        PieceManager.DeselectPiece();
-                        PieceManager.SelectPiece(piece);
-                    }
-                    else
-                    {
-                        //pressing enemy piece
-                        MoveAndCapturePiece(mousePos, piece);
-                    }
-                }
-            }
-            else
-            {
-                MovePiece(mousePos);   
-            }
-            */
-        }
-    }
-
-    
-
-    void MovePiece(Vector2 mousePos)
-    {
-        //clicking tile
-        RaycastHit2D tileHit = Physics2D.Raycast(mousePos, Vector2.zero, Mathf.Infinity, TileMask);
-        if (tileHit.transform != null)
-        {
-            if (tileHit.transform.TryGetComponent(out BoardTile tile))
-            {
-                if (PieceManager.SelectedPiece != null)
-                {
-                    BoardManager.MovePieceToTile(tile, PieceManager.SelectedPiece);
-                    PieceManager.DeselectPiece();
-                }
-            }
-        }
-    }
-
-    void MoveAndCapturePiece(Vector2 mousePos, Piece pieceToCapture)
-    {
-        //clicking tile
-        RaycastHit2D tileHit = Physics2D.Raycast(mousePos, Vector2.zero, Mathf.Infinity, TileMask);
-        if (tileHit.transform != null)
-        {
-            if (tileHit.transform.TryGetComponent(out BoardTile tile))
-            {
-                if (PieceManager.SelectedPiece != null)
-                {
-                    PieceManager.SelectedPiece.CaptureOtherPiece(pieceToCapture, tile);
-                    BoardManager.MovePieceToTile(tile, PieceManager.SelectedPiece);
                     PieceManager.DeselectPiece();
                 }
             }

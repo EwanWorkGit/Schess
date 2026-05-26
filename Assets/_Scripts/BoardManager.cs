@@ -109,7 +109,7 @@ public class BoardManager : MonoBehaviour
             piece.CurrentTeam = PieceCache[i].Team;
             piece.Renderer.color = PieceCache[i].Color;
 
-            piece.SetMoves();
+            piece.PieceConfig();
 
             piece.CurrentTile.OccupyingPiece = piece;
         }

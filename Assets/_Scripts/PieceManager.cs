@@ -15,7 +15,6 @@ public class PieceManager : MonoBehaviour
     public void SelectPiece(Piece piece)
     {
         SelectedPiece = piece;
-        Debug.Log($"Selected {SelectedPiece.transform.name}");
         DisplayMoves();
     }
     

@@ -1,23 +1,28 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using TMPro;
 using UnityEngine;
 
 public class WinManager : MonoBehaviour
 {
+    public static WinManager Instance;
+    public bool GameActive = true;
+
     [SerializeField] GameObject Winscreen;
+    [SerializeField] TMP_Text TeamText;
 
     Dictionary<Team, List<Piece>> KingsInEachTeam = new Dictionary<Team, List<Piece>>();
 
+    private void Awake()
+    {
+        Instance = this;
+    }
+
     private void Start()
     {
-        Piece[] allPieces = FindObjectsOfType<Piece>();
-        Piece[] kings = allPieces.Where(k => k.CurrentPieceType == PieceType.King).ToArray();
-        
-        foreach(Team team in System.Enum.GetValues(typeof(Team)))
-        {
-            KingsInEachTeam.Add(team, new List<Piece>(allPieces.Where(k => k.CurrentTeam == team && k.CurrentPieceType == PieceType.King).ToList()));
-        }
+        SetKings();
+        Winscreen.SetActive(false);
     }
 
     private void Update()
@@ -55,8 +60,31 @@ public class WinManager : MonoBehaviour
             //one team has won, display it.
             foreach(var keyValue in KingsInEachTeam)
             {
-                Debug.Log($"{keyValue.Key} has won!");
+                TeamText.text = $"{keyValue.Key} team has won!";
+                Winscreen.SetActive(true);
+                GameActive = false;
             }
         }
+    }
+
+    void SetKings()
+    {
+        KingsInEachTeam.Clear();
+
+        Piece[] allPieces = FindObjectsOfType<Piece>();
+        Piece[] kings = allPieces.Where(k => k.CurrentPieceType == PieceType.King).ToArray();
+
+        foreach (Team team in System.Enum.GetValues(typeof(Team)))
+        {
+            KingsInEachTeam.Add(team, new List<Piece>(allPieces.Where(k => k.CurrentTeam == team && k.CurrentPieceType == PieceType.King).ToList()));
+        }
+    }
+
+    public void Rematch()
+    {
+        BoardManager.Instance.ResetPieces();
+        SetKings();
+        Winscreen.SetActive(false);
+        GameActive = true;
     }
 }
