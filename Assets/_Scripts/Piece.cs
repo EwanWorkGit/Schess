@@ -89,7 +89,7 @@ public class Piece : MonoBehaviour
                 new Vector2Int(1,1), new Vector2Int(1,-1), new Vector2Int(-1,1), new Vector2Int(-1,-1)
             };
 
-            Steps = 4;
+            Steps = 2;
             CurrentMoveType = MoveType.Directional;
         }
 
