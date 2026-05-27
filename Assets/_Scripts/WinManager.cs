@@ -21,7 +21,6 @@ public class WinManager : MonoBehaviour
 
     private void Start()
     {
-        SetKings();
         Winscreen.SetActive(false);
     }
 
@@ -67,7 +66,7 @@ public class WinManager : MonoBehaviour
         }
     }
 
-    void SetKings()
+    public void SetKings()
     {
         KingsInEachTeam.Clear();
 

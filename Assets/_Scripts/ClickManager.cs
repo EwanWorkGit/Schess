@@ -66,7 +66,7 @@ public class ClickManager : MonoBehaviour
                 {
                     if (clickedPiece.CurrentTeam != PieceManager.SelectedPiece.CurrentTeam)
                     {
-                        PieceManager.SelectedPiece.CaptureOtherPiece(clickedPiece, clickedTile);
+                        BoardManager.CaptureOtherPiece(PieceManager.SelectedPiece, clickedPiece, clickedTile);
                         BoardManager.MovePieceToTile(clickedTile, PieceManager.SelectedPiece);
                         PieceManager.DeselectPiece();
                     }

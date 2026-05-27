@@ -6,6 +6,7 @@ public enum PieceType { Pawn, Bishop, King, Queen, Knight, Rook, Assassin }
 
 public class Piece : MonoBehaviour
 {
+    //how pieces can move, NOT ACTUAL STATE CHANGES
     enum MoveType { Directional, Positional }
 
     public Team CurrentTeam;
@@ -24,12 +25,13 @@ public class Piece : MonoBehaviour
 
     private void Awake()
     {
-        PieceConfig();
+        //only does internal stuff
+        MoveAndSpriteConfig();
     }
 
     private void Start()
     {
-        if(CurrentTile != null)
+        if (CurrentTile != null)
         {
             CurrentTile.OccupyingPiece = this;
         }
@@ -37,10 +39,17 @@ public class Piece : MonoBehaviour
         transform.name = $"{CurrentTeam.ToString()} : {CurrentPieceType.ToString()} : {transform.position.x}x {transform.position.y}y";
     }
 
-    public void PieceConfig()
+    bool IsInsideBounds(int width, int height, Vector2Int vec)
+    {
+        bool insideBounds = vec.x >= 0 && vec.x < width && vec.y >= 0 && vec.y < height;
+        return insideBounds;
+    }
+
+    //moves and sprites
+    public void MoveAndSpriteConfig()
     {
         //DIRECTIONAL
-        if(CurrentPieceType == PieceType.Bishop)
+        if (CurrentPieceType == PieceType.Bishop)
         {
             Directions = new Vector2Int[]
             {
@@ -50,7 +59,7 @@ public class Piece : MonoBehaviour
             Steps = 100;
             CurrentMoveType = MoveType.Directional;
         }
-        else if(CurrentPieceType == PieceType.King)
+        else if (CurrentPieceType == PieceType.King)
         {
             Directions = new Vector2Int[]
             {
@@ -61,7 +70,7 @@ public class Piece : MonoBehaviour
             Steps = 1;
             CurrentMoveType = MoveType.Directional;
         }
-        else if(CurrentPieceType == PieceType.Queen)
+        else if (CurrentPieceType == PieceType.Queen)
         {
             Directions = new Vector2Int[]
             {
@@ -72,7 +81,7 @@ public class Piece : MonoBehaviour
             Steps = 100;
             CurrentMoveType = MoveType.Directional;
         }
-        else if(CurrentPieceType == PieceType.Rook)
+        else if (CurrentPieceType == PieceType.Rook)
         {
             Directions = new Vector2Int[]
             {
@@ -82,7 +91,7 @@ public class Piece : MonoBehaviour
             Steps = 100;
             CurrentMoveType = MoveType.Directional;
         }
-        else if(CurrentPieceType == PieceType.Assassin)
+        else if (CurrentPieceType == PieceType.Assassin)
         {
             Directions = new Vector2Int[]
             {
@@ -94,9 +103,9 @@ public class Piece : MonoBehaviour
         }
 
         //POSITIONAL
-        if(CurrentPieceType == PieceType.Pawn)
+        if (CurrentPieceType == PieceType.Pawn)
         {
-            if(CurrentTeam == Team.White)
+            if (CurrentTeam == Team.White)
             {
                 Offsets = new Vector2Int[] { new Vector2Int(0, 1) };
             }
@@ -108,7 +117,7 @@ public class Piece : MonoBehaviour
             Steps = 1;
             CurrentMoveType = MoveType.Positional;
         }
-        else if(CurrentPieceType == PieceType.Knight)
+        else if (CurrentPieceType == PieceType.Knight)
         {
             Offsets = new Vector2Int[]
             {
@@ -122,12 +131,31 @@ public class Piece : MonoBehaviour
         int index = (int)CurrentPieceType;
         if (index < 0 || index >= SpriteArray.Length)
         {
-            Renderer.sprite = DefaultSprite;   
+            Renderer.sprite = DefaultSprite;
         }
         else
         {
             Renderer.sprite = SpriteArray[index];
         }
+    }
+
+    public void AssignClosestTileToCurrent()
+    {
+        BoardTile closestTile = null;
+        float closestDistance = Mathf.Infinity;
+
+        foreach (BoardTile tile in BoardManager.Instance.Tiles)
+        {
+            float dist = Vector2.Distance(transform.position, tile.transform.position);
+
+            if (dist < closestDistance)
+            {
+                closestDistance = dist;
+                closestTile = tile;
+            }
+        }
+
+        CurrentTile = closestTile;
     }
 
     public Vector2Int[] GetValidPositions(BoardTile startTile)
@@ -268,6 +296,7 @@ public class Piece : MonoBehaviour
                         if (passedPiece)
                         {
                             validPositions.Add(pos);
+                            passedPiece = false;
                         }
                         else
                         {
@@ -278,24 +307,5 @@ public class Piece : MonoBehaviour
             }
         }
         
-    }
-
-    public void CaptureOtherPiece(Piece pieceToCapture, BoardTile captureTile)
-    {
-        Vector2Int[] validPositions = GetValidPositions(CurrentTile);
-        foreach(Vector2Int pos in validPositions)
-        {
-            if(pos == captureTile.GridPos)
-            {
-                Destroy(pieceToCapture.gameObject);
-                return;
-            }
-        }
-    }
-
-    bool IsInsideBounds(int width, int height, Vector2Int vec)
-    {
-        bool insideBounds = vec.x >= 0 && vec.x < width && vec.y >= 0 && vec.y < height;
-        return insideBounds;
     }
 }

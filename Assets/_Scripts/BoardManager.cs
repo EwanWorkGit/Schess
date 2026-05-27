@@ -18,21 +18,7 @@ public class BoardManager : MonoBehaviour
         Instance = this;
     }
 
-    private void Start()
-    {
-        SetBoard();
-        Piece[] allPieces = FindObjectsOfType<Piece>();
-        PieceCache = new PieceCache[allPieces.Length];
-        for(int i = 0; i < allPieces.Length; i++)
-        {
-            PieceCache[i].Team = allPieces[i].CurrentTeam;
-            PieceCache[i].PieceType = allPieces[i].CurrentPieceType;
-            PieceCache[i].CurrentTile = allPieces[i].CurrentTile;
-            PieceCache[i].Color = allPieces[i].GetComponent<SpriteRenderer>().color;
-        }
-    }
-
-    void SetBoard()
+    public void SetBoard()
     {
         Tiles = new BoardTile[8, 8];
         BoardTile[] tiles = TileHolder.GetComponentsInChildren<BoardTile>();
@@ -46,7 +32,7 @@ public class BoardManager : MonoBehaviour
             {
                 BoardTile currentTile = tiles[y * width + x];
                 currentTile.GridPos = new Vector2Int(x, y);
-                Tiles[x,y] = currentTile;
+                Tiles[x, y] = currentTile;
             }
         }
 
@@ -64,6 +50,22 @@ public class BoardManager : MonoBehaviour
                 {
                     tile.Renderer.color = OddColor;
                 }
+            }
+        }
+    }
+    public void CachePieces(Piece[] piecesToCache)
+    {
+        PieceCache = new PieceCache[piecesToCache.Length];
+        for (int i = 0; i < piecesToCache.Length; i++)
+        {
+            PieceCache[i].Team = piecesToCache[i].CurrentTeam;
+            PieceCache[i].PieceType = piecesToCache[i].CurrentPieceType;
+            PieceCache[i].CurrentTile = piecesToCache[i].CurrentTile;
+            PieceCache[i].Color = piecesToCache[i].GetComponent<SpriteRenderer>().color;
+
+            if (PieceCache[i].CurrentTile == null)
+            {
+                Debug.Log("Null current tile found");
             }
         }
     }
@@ -89,6 +91,18 @@ public class BoardManager : MonoBehaviour
             }
         }
     }
+    public void CaptureOtherPiece(Piece attackPiece, Piece pieceToCapture, BoardTile captureTile)
+    {
+        Vector2Int[] validPositions = attackPiece.GetValidPositions(attackPiece.CurrentTile);
+        foreach (Vector2Int pos in validPositions)
+        {
+            if (pos == captureTile.GridPos)
+            {
+                Destroy(pieceToCapture.gameObject);
+                return;
+            }
+        }
+    }
     public void ResetPieces()
     {
         //Destroys all pieces
@@ -109,7 +123,7 @@ public class BoardManager : MonoBehaviour
             piece.CurrentTeam = PieceCache[i].Team;
             piece.Renderer.color = PieceCache[i].Color;
 
-            piece.PieceConfig();
+            piece.MoveAndSpriteConfig();
 
             piece.CurrentTile.OccupyingPiece = piece;
         }
