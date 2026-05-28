@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using Unity.VisualScripting;
@@ -8,6 +9,7 @@ public enum Team { White, Black }
 public class TurnManager : MonoBehaviour
 {
     public static TurnManager Instance;
+    public Action OnTurnChange;
     public Team ActiveTeam;
 
     [SerializeField] bool AutoChangeTurns;
@@ -44,6 +46,7 @@ public class TurnManager : MonoBehaviour
         }
 
         ActiveTeam = (Team)TeamIndex;
+        OnTurnChange?.Invoke();
     }
 
     public void ResetTurn()

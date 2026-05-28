@@ -110,6 +110,7 @@ MonoBehaviour:
   - {fileID: 21300000, guid: a77068e88a4e2db45a99d4a6fe486cf6, type: 3}
   - {fileID: 21300000, guid: 01cb6c8ca4592cc40bbaf2a831a52121, type: 3}
   - {fileID: 21300000, guid: 3a20dd6a3abd7954aa988afa162bec14, type: 3}
+  - {fileID: 21300000, guid: 6e061a6f70a096f408716edc1b9cc9e2, type: 3}
   DefaultSprite: {fileID: 7482667652216324306, guid: 311925a002f4447b3a28927169b83ea6, type: 3}
 --- !u!61 &6049034547633164804
 BoxCollider2D:

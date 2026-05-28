@@ -2,6 +2,8 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+public enum ClickType { Move, Capture, Select }
+
 public class ClickManager : MonoBehaviour
 {
     public LayerMask PieceMask, TileMask;
@@ -57,18 +59,14 @@ public class ClickManager : MonoBehaviour
                 //select
                 if (clickedPiece.CurrentTeam == TurnManager.Instance.ActiveTeam)
                 {
-                    //to prevent multiple different pieces' clicks from stacking
-                    PieceManager.DeselectPiece();
-                    PieceManager.SelectPiece(clickedPiece);
+                    clickedPiece.HandleClickInteraction(ClickType.Select, clickedPiece, clickedTile);
                 }
                 //capture
                 else if (PieceManager.SelectedPiece != null)
                 {
                     if (clickedPiece.CurrentTeam != PieceManager.SelectedPiece.CurrentTeam)
                     {
-                        BoardManager.CaptureOtherPiece(PieceManager.SelectedPiece, clickedPiece, clickedTile);
-                        BoardManager.MovePieceToTile(clickedTile, PieceManager.SelectedPiece);
-                        PieceManager.DeselectPiece();
+                        PieceManager.SelectedPiece.HandleClickInteraction(ClickType.Capture, clickedPiece, clickedTile);   
                     }
                 }
             }
@@ -77,9 +75,7 @@ public class ClickManager : MonoBehaviour
             {
                 if (PieceManager.SelectedPiece != null)
                 {
-                    //move selected piece to clicked tile
-                    BoardManager.MovePieceToTile(clickedTile, PieceManager.SelectedPiece);
-                    PieceManager.DeselectPiece();
+                    PieceManager.SelectedPiece.HandleClickInteraction(ClickType.Move, PieceManager.SelectedPiece, clickedTile);
                 }
             }
         }

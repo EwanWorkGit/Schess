@@ -77,7 +77,7 @@ public class BoardManager : MonoBehaviour
         }
 
         //get valid tiles, check if place to move is inside list, move if true, end turn
-        Vector2Int[] validPositions = piece.GetValidPositions(piece.CurrentTile);
+        Vector2Int[] validPositions = piece.GetValidTargets(piece.CurrentTile);
         foreach(Vector2Int pos in validPositions)
         {
             if(pos == newTile.GridPos)
@@ -86,14 +86,13 @@ public class BoardManager : MonoBehaviour
                 newTile.OccupyingPiece = piece;
                 piece.CurrentTile = newTile;
                 piece.transform.position = newTile.transform.position;
-                TurnManager.Instance.ChangeTeam(false);
                 return;
             }
         }
     }
     public void CaptureOtherPiece(Piece attackPiece, Piece pieceToCapture, BoardTile captureTile)
     {
-        Vector2Int[] validPositions = attackPiece.GetValidPositions(attackPiece.CurrentTile);
+        Vector2Int[] validPositions = attackPiece.GetValidTargets(attackPiece.CurrentTile);
         foreach (Vector2Int pos in validPositions)
         {
             if (pos == captureTile.GridPos)

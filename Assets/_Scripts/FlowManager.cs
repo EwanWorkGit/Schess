@@ -15,6 +15,7 @@ public class FlowManager : MonoBehaviour
         {
             piece.AssignClosestTileToCurrent();
             piece.transform.position = piece.CurrentTile.transform.position;
+            piece.CurrentTile.OccupyingPiece = piece;
         }
         BoardManager.CachePieces(allPieces);
         WinManager.SetKings();

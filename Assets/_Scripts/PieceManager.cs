@@ -12,6 +12,19 @@ public class PieceManager : MonoBehaviour
         Instance = this;
     }
 
+    private void Update()
+    {
+        if(Input.GetMouseButtonDown(1))
+        {
+            if(SelectedPiece != null)
+            {
+                UnDisplayMoves();
+                SelectedPiece.IsInActionMode = !SelectedPiece.IsInActionMode;
+                DisplayMoves();
+            }
+        }
+    }
+
     public void SelectPiece(Piece piece)
     {
         SelectedPiece = piece;
@@ -20,20 +33,24 @@ public class PieceManager : MonoBehaviour
     
     public void DeselectPiece()
     {
+        UnDisplayMoves();
+        SelectedPiece = null;
+    }
+
+    public void UnDisplayMoves()
+    {
         BoardTile[,] Tiles = BoardManager.Instance.Tiles;
-        foreach(BoardTile tile in Tiles)
+        foreach (BoardTile tile in Tiles)
         {
             tile.SeeThroughTile.SetActive(false);
         }
-
-        SelectedPiece = null;
     }
 
     public void DisplayMoves()
     {
         if (SelectedPiece != null)
         {
-            Vector2Int[] validPositions = SelectedPiece.GetValidPositions(SelectedPiece.CurrentTile);
+            Vector2Int[] validPositions = SelectedPiece.GetValidTargets(SelectedPiece.CurrentTile);
             BoardTile[,] tiles = BoardManager.Instance.Tiles;
 
             foreach (Vector2Int pos in validPositions)
