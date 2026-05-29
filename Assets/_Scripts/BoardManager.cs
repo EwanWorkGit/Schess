@@ -1,5 +1,7 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public class BoardManager : MonoBehaviour
@@ -11,6 +13,8 @@ public class BoardManager : MonoBehaviour
     [SerializeField] Transform TileHolder;
     [SerializeField] Color EvenColor, OddColor;
 
+    Dictionary<BoardTile, int> TurnsUntilEffect = new Dictionary<BoardTile, int>();
+
     PieceCache[] PieceCache; //piece info to load upon reload
 
     private void Awake()
@@ -18,6 +22,12 @@ public class BoardManager : MonoBehaviour
         Instance = this;
     }
 
+    private void Start()
+    {
+        TurnManager.Instance.OnTurnChange += DecrementTurns;
+    }
+
+    //add delayed attack
     public void SetBoard()
     {
         Tiles = new BoardTile[8, 8];
@@ -100,6 +110,42 @@ public class BoardManager : MonoBehaviour
                 Destroy(pieceToCapture.gameObject);
                 return;
             }
+        }
+    }
+    public void AddDelayedEffect(BoardTile effectTile, int turnsUntilEffect)
+    {
+        effectTile.Warning.SetActive(true);
+        TurnsUntilEffect.Add(effectTile, turnsUntilEffect);
+    }
+    void ActivateEffect(BoardTile tile)
+    {
+        if(tile.OccupyingPiece != null)
+        {
+            Destroy(tile.OccupyingPiece.gameObject);
+        }
+        
+        tile.Warning.SetActive(false);
+    }
+
+    //triggered by turnmanager's action
+    void DecrementTurns()
+    {
+        List<BoardTile> toRemove = new List<BoardTile>();
+        foreach(var kvp in TurnsUntilEffect.ToList())
+        {
+            int newValue = kvp.Value - 1;
+            TurnsUntilEffect[kvp.Key] = newValue;
+            if(newValue <= 0)
+            {
+                Debug.Log("Effect triggered");
+                ActivateEffect(kvp.Key);
+                toRemove.Add(kvp.Key);
+            }
+        }
+
+        foreach(BoardTile tile in toRemove)
+        {
+            TurnsUntilEffect.Remove(tile);
         }
     }
     public void ResetPieces()

@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class BoardTile : MonoBehaviour
 {
-    public GameObject SeeThroughTile;
+    public GameObject SeeThroughTile, Warning;
     public Vector2Int GridPos;
     public SpriteRenderer Renderer;
     public Piece OccupyingPiece;

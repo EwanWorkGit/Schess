@@ -16,7 +16,6 @@ public class Piece : MonoBehaviour
     public BoardTile CurrentTile;
     public SpriteRenderer Renderer;
     public bool IsInActionMode = false;
-    public float TurnsUntilFire;
     public MoveType CurrentMoveType;
     public Vector2Int[] Directions;
     public Vector2Int[] Offsets;
@@ -25,22 +24,24 @@ public class Piece : MonoBehaviour
     [SerializeField] Sprite DefaultSprite;
 
     public int Steps = 1;
-    float TurnsToFire = 1;
+    int TurnsUntilFire = 2;
 
     private void Awake()
     {
         //only does internal stuff
-        MoveAndSpriteConfig();
-        TurnsUntilFire = TurnsToFire;
         transform.name = $"{CurrentTeam.ToString()} : {CurrentPieceType.ToString()} : {transform.position.x}x {transform.position.y}y";
     }
+    private void Start()
+    {
+        MoveAndSpriteConfig();
+    }
 
-    
-
-    //moves and sprites
     public void HandleClickInteraction(ClickType clickType, Piece clickedPiece, BoardTile clickedTile)
     {
-        BaseClickInteraction(clickType, clickedPiece, clickedTile);
+        if(!SpecialClickInteraction(clickType, clickedPiece, clickedTile))
+        {
+            BaseClickInteraction(clickType, clickedPiece, clickedTile);
+        }
     }
     void BaseClickInteraction(ClickType clickType, Piece clickedPiece, BoardTile clickedTile)
     {
@@ -68,6 +69,38 @@ public class Piece : MonoBehaviour
             turnManager.ChangeTeam(false);
             pieceManager.DeselectPiece();
         }
+    }
+
+    bool SpecialClickInteraction(ClickType clickType, Piece clickedPiece, BoardTile clickedTile)
+    {
+        PieceManager pieceManager = PieceManager.Instance;
+        BoardManager boardManager = BoardManager.Instance;
+        TurnManager turnManager = TurnManager.Instance;
+
+        Piece selectedPiece = PieceManager.Instance.SelectedPiece;
+        if(selectedPiece == null)
+        {
+            Debug.Log("Selected piece null, doing reverting to base");
+            return false;
+        }
+
+        bool validEndTile = TileIsValid(selectedPiece.CurrentTile, clickedTile);
+        //Decides if base should be used or not
+        if (selectedPiece != null)
+        {
+            //artillery capture
+            if (selectedPiece.CurrentPieceType == PieceType.Artillery && clickType == ClickType.Capture && validEndTile)
+            {
+                Debug.Log("Running special capture code");
+                boardManager.AddDelayedEffect(clickedTile, TurnsUntilFire);
+                turnManager.ChangeTeam(false);
+                pieceManager.DeselectPiece();
+                return true;
+            }
+        }
+
+        //base fallback
+        return false;
     }
 
     public void MoveAndSpriteConfig()
@@ -103,7 +136,6 @@ public class Piece : MonoBehaviour
         CurrentTile = closestTile;
     }
 
-    
     //puts valid movesets into a list
     public Vector2Int[] GetValidTargets(BoardTile startTile)
     {

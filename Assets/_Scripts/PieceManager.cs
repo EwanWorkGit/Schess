@@ -30,13 +30,11 @@ public class PieceManager : MonoBehaviour
         SelectedPiece = piece;
         DisplayMoves();
     }
-    
     public void DeselectPiece()
     {
         UnDisplayMoves();
         SelectedPiece = null;
     }
-
     public void UnDisplayMoves()
     {
         BoardTile[,] Tiles = BoardManager.Instance.Tiles;
@@ -45,7 +43,6 @@ public class PieceManager : MonoBehaviour
             tile.SeeThroughTile.SetActive(false);
         }
     }
-
     public void DisplayMoves()
     {
         if (SelectedPiece != null)

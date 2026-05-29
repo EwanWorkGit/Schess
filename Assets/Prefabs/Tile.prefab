@@ -101,6 +101,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   SeeThroughTile: {fileID: 6450028525571389802}
+  Warning: {fileID: 4177045831752572852}
   GridPos: {x: 0, y: 0}
   Renderer: {fileID: 0}
   OccupyingPiece: {fileID: 0}
@@ -206,6 +207,11 @@ PrefabInstance:
 --- !u!4 &4177045831752572746 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 2248874925751957994, guid: d23173005d6d4454283f3efb762bae34, type: 3}
+  m_PrefabInstance: {fileID: 2792868222483375776}
+  m_PrefabAsset: {fileID: 0}
+--- !u!1 &4177045831752572852 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 2248874925751957780, guid: d23173005d6d4454283f3efb762bae34, type: 3}
   m_PrefabInstance: {fileID: 2792868222483375776}
   m_PrefabAsset: {fileID: 0}
 --- !u!1001 &4241792791938475054
