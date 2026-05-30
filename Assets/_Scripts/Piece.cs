@@ -13,7 +13,7 @@ public class Piece : MonoBehaviour
 
     public Team CurrentTeam;
     public PieceType CurrentPieceType;    
-    public BoardTile CurrentTile;
+    public BoardTile CurrentTile, StartingTile;
     public SpriteRenderer Renderer;
     public bool IsInActionMode = false;
     public MoveType CurrentMoveType;
@@ -26,10 +26,32 @@ public class Piece : MonoBehaviour
     public int Steps = 1;
     int TurnsUntilFire = 2;
 
+    private void OnValidate()
+    {
+        int index = (int)CurrentPieceType;
+        if (index < 0 || index >= SpriteArray.Length)
+        {
+            Renderer.sprite = DefaultSprite;
+        }
+        else
+        {
+            Renderer.sprite = SpriteArray[index];
+        }
+
+        if(CurrentTeam == Team.White)
+        {
+            Renderer.color = Color.white;
+        }
+        else if(CurrentTeam == Team.Black)
+        {
+            Renderer.color = Color.black;
+        }
+    }
+
     private void Awake()
     {
         //only does internal stuff
-        transform.name = $"{CurrentTeam.ToString()} : {CurrentPieceType.ToString()} : {transform.position.x}x {transform.position.y}y";
+        transform.name = $"{CurrentTeam} : {CurrentPieceType} : ({transform.position.x:F1}, {transform.position.y:F1})";
     }
     private void Start()
     {
@@ -70,7 +92,6 @@ public class Piece : MonoBehaviour
             pieceManager.DeselectPiece();
         }
     }
-
     bool SpecialClickInteraction(ClickType clickType, Piece clickedPiece, BoardTile clickedTile)
     {
         PieceManager pieceManager = PieceManager.Instance;
@@ -80,7 +101,7 @@ public class Piece : MonoBehaviour
         Piece selectedPiece = PieceManager.Instance.SelectedPiece;
         if(selectedPiece == null)
         {
-            Debug.Log("Selected piece null, doing reverting to base");
+            Debug.Log("Selected piece null, doing reverting to base (no special selects for now!)");
             return false;
         }
 
@@ -89,13 +110,15 @@ public class Piece : MonoBehaviour
         if (selectedPiece != null)
         {
             //artillery capture
-            if (selectedPiece.CurrentPieceType == PieceType.Artillery && clickType == ClickType.Capture && validEndTile)
+            if (selectedPiece.CurrentPieceType == PieceType.Artillery && validEndTile)
             {
-                Debug.Log("Running special capture code");
-                boardManager.AddDelayedEffect(clickedTile, TurnsUntilFire);
-                turnManager.ChangeTeam(false);
-                pieceManager.DeselectPiece();
-                return true;
+                if(clickType == ClickType.Capture || (selectedPiece.IsInActionMode && clickType == ClickType.Move))
+                {
+                    boardManager.AddDelayedEffect(clickedTile, TurnsUntilFire);
+                    turnManager.ChangeTeam(false);
+                    pieceManager.DeselectPiece();
+                    return true;
+                }        
             }
         }
 
@@ -115,6 +138,15 @@ public class Piece : MonoBehaviour
         else
         {
             Renderer.sprite = SpriteArray[index];
+        }
+
+        if (CurrentTeam == Team.White)
+        {
+            Renderer.color = Color.white;
+        }
+        else if (CurrentTeam == Team.Black)
+        {
+            Renderer.color = Color.black;
         }
     }
     public void AssignClosestTileToCurrent()

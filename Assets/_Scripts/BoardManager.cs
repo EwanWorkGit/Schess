@@ -9,13 +9,16 @@ public class BoardManager : MonoBehaviour
     public static BoardManager Instance;
     public BoardTile[,] Tiles;
 
-    [SerializeField] GameObject PiecePrefab;
+    [SerializeField] GameObject PiecePrefab, PreviewPrefab, TilePrefab;
     [SerializeField] Transform TileHolder;
     [SerializeField] Color EvenColor, OddColor;
+    [SerializeField] int Width = 2, Height = 2;
 
     Dictionary<BoardTile, int> TurnsUntilEffect = new Dictionary<BoardTile, int>();
 
     PieceCache[] PieceCache; //piece info to load upon reload
+
+    GameObject[,] PreviewGrid;
 
     private void Awake()
     {
@@ -30,25 +33,25 @@ public class BoardManager : MonoBehaviour
     //add delayed attack
     public void SetBoard()
     {
-        Tiles = new BoardTile[8, 8];
-        BoardTile[] tiles = TileHolder.GetComponentsInChildren<BoardTile>();
+        DestroyPreviewGrid();
 
-        int width = Tiles.GetLength(0);
-        int height = Tiles.GetLength(1);
+        Tiles = new BoardTile[Width, Height];
+        Vector2 offset = new Vector2((Width / 2f)-0.5f, (Height / 2f)-0.5f);
 
-        for (int y = 0; y < height; y++)
+        for (int y = 0; y < Height; y++)
         {
-            for (int x = 0; x < height; x++)
+            for (int x = 0; x < Width; x++)
             {
-                BoardTile currentTile = tiles[y * width + x];
+                GameObject obj = Instantiate(TilePrefab, new Vector2(x, y) - offset, Quaternion.identity, transform);
+                BoardTile currentTile = obj.GetComponent<BoardTile>();
                 currentTile.GridPos = new Vector2Int(x, y);
                 Tiles[x, y] = currentTile;
             }
         }
 
-        for (int y = 0; y < height; y++)
+        for (int y = 0; y < Height; y++)
         {
-            for (int x = 0; x < width; x++)
+            for (int x = 0; x < Width; x++)
             {
                 //color
                 BoardTile tile = Tiles[x, y];
@@ -115,11 +118,15 @@ public class BoardManager : MonoBehaviour
     public void AddDelayedEffect(BoardTile effectTile, int turnsUntilEffect)
     {
         effectTile.Warning.SetActive(true);
-        TurnsUntilEffect.Add(effectTile, turnsUntilEffect);
+        if(!TurnsUntilEffect.ContainsKey(effectTile))
+        {
+            TurnsUntilEffect.Add(effectTile, turnsUntilEffect);
+        }
     }
     void ActivateEffect(BoardTile tile)
     {
-        if(tile.OccupyingPiece != null)
+        Debug.Log("Effect triggered");
+        if (tile.OccupyingPiece != null)
         {
             Destroy(tile.OccupyingPiece.gameObject);
         }
@@ -137,7 +144,6 @@ public class BoardManager : MonoBehaviour
             TurnsUntilEffect[kvp.Key] = newValue;
             if(newValue <= 0)
             {
-                Debug.Log("Effect triggered");
                 ActivateEffect(kvp.Key);
                 toRemove.Add(kvp.Key);
             }
@@ -155,6 +161,11 @@ public class BoardManager : MonoBehaviour
         {
             DestroyImmediate(piece.gameObject);
         }
+        TurnsUntilEffect.Clear();
+        foreach(BoardTile tile in FindObjectsOfType<BoardTile>())
+        {
+            tile.Warning.SetActive(false);
+        }
 
         TurnManager.Instance.ResetTurn();
 
@@ -165,6 +176,7 @@ public class BoardManager : MonoBehaviour
             Piece piece = pieceObj.GetComponent<Piece>();
             piece.CurrentPieceType = PieceCache[i].PieceType;
             piece.CurrentTile = PieceCache[i].CurrentTile;
+            piece.StartingTile = PieceCache[i].CurrentTile;
             piece.CurrentTeam = PieceCache[i].Team;
             piece.Renderer.color = PieceCache[i].Color;
 
@@ -174,5 +186,43 @@ public class BoardManager : MonoBehaviour
         }
 
         PieceManager.Instance.DeselectPiece();
+    }
+
+    [ContextMenu("Generate Preview Grid")]
+    void GeneratePreviewGrid()
+    {
+        //destroy and clear
+        for (int i = transform.childCount - 1; i >= 0; i--)
+        {
+            DestroyImmediate(transform.GetChild(i).gameObject);
+        }
+        
+        PreviewGrid = new GameObject[Width, Height];
+        Vector2 offset = new Vector2((Width / 2f) - 0.5f, (Height / 2f) - 0.5f);
+
+        if (Height > 0 && Width > 0)
+        {
+            for (int y = 0; y < Height; y++)
+            {
+                for (int x = 0; x < Width; x++)
+                {
+                    //spawn prefab
+                    PreviewGrid[x, y] = Instantiate(PreviewPrefab, new Vector2(x, y) - offset, Quaternion.identity, transform);
+                }
+            }
+        }
+        else
+        {
+            Debug.Log("x or y is <= 0");
+        }
+    }
+    [ContextMenu("Destroy Preview Grid")]
+    void DestroyPreviewGrid()
+    {
+        //destroy and clear
+        for (int i = transform.childCount - 1; i >= 0; i--)
+        {
+            DestroyImmediate(transform.GetChild(i).gameObject);
+        }
     }
 }

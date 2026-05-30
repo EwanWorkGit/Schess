@@ -18,7 +18,21 @@ public class MovesetLibrary : MonoBehaviour
     public void DefinePiece(Piece piece)
     {
         //DIRECTIONAL
-        if (piece.CurrentPieceType == PieceType.Bishop)
+        if (piece.CurrentPieceType == PieceType.Pawn)
+        {
+            if (piece.CurrentTeam == Team.White)
+            {
+                piece.Directions = new Vector2Int[] { new Vector2Int(0, 1) };
+            }
+            else
+            {
+                piece.Directions = new Vector2Int[] { new Vector2Int(0, -1) };
+            }
+
+            piece.Steps = 2;
+            piece.CurrentMoveType = MoveType.Directional;
+        }
+        else if (piece.CurrentPieceType == PieceType.Bishop)
         {
             piece.Directions = new Vector2Int[]
             {
@@ -72,20 +86,6 @@ public class MovesetLibrary : MonoBehaviour
         }
 
         //POSITIONAL
-        if (piece.CurrentPieceType == PieceType.Pawn)
-        {
-            if (piece.CurrentTeam == Team.White)
-            {
-                piece.Offsets = new Vector2Int[] { new Vector2Int(0, 1) };
-            }
-            else
-            {
-                piece.Offsets = new Vector2Int[] { new Vector2Int(0, -1) };
-            }
-
-            piece.Steps = 1;
-            piece.CurrentMoveType = MoveType.Positional;
-        }
         else if (piece.CurrentPieceType == PieceType.Knight)
         {
             piece.Offsets = new Vector2Int[]
@@ -166,25 +166,36 @@ public class MovesetLibrary : MonoBehaviour
     }
     public void PawnMoves(Piece piece, BoardTile startTile, BoardManager boardManager, List<Vector2Int> validPositions)
     {
-        foreach (Vector2Int offset in piece.Offsets)
+        foreach (Vector2Int dir in piece.Directions)
         {
             //out of bounds
-            Vector2Int pos = startTile.GridPos + offset;
-            if (!piece.IsInsideBounds(boardManager.Tiles.GetLength(0), boardManager.Tiles.GetLength(1), pos))
+            if (piece.StartingTile != piece.CurrentTile)
             {
-                continue;
+                piece.Steps = 1;
+            }
+            else
+            {
+                piece.Steps = 2;
             }
 
-            //movable pieces
-            if (boardManager.Tiles[pos.x, pos.y].OccupyingPiece == null)
+            for(int i = 1; i <= piece.Steps; i++)
             {
-                validPositions.Add(pos);
-            }
+                Vector2Int pos = startTile.GridPos + (dir * i);
+                if (!piece.IsInsideBounds(boardManager.Tiles.GetLength(0), boardManager.Tiles.GetLength(1), pos))
+                {
+                    break;
+                }
+
+                //movable pieces
+                if (boardManager.Tiles[pos.x, pos.y].OccupyingPiece == null)
+                {
+                    validPositions.Add(pos);
+                }
+            }   
         }
 
         //captures
         Vector2Int[] captureOffsets = new Vector2Int[] { new Vector2Int(1, 1), new Vector2Int(-1, 1) };
-
         foreach (Vector2Int offset in captureOffsets)
         {
             Vector2Int pos = startTile.GridPos + (piece.CurrentTeam == Team.White ? offset : -offset);
@@ -263,7 +274,7 @@ public class MovesetLibrary : MonoBehaviour
                     Vector2Int pos = startTile.GridPos + (dir * i);
                     if (!piece.IsInsideBounds(boardManager.Tiles.GetLength(0), boardManager.Tiles.GetLength(1), pos))
                     {
-                        break;
+                        continue;
                     }
                     validPositions.Add(pos);
                     float dist = Vector2Int.Distance(startTile.GridPos, pos);
