@@ -185,6 +185,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   CurrentTeam: 0
   CurrentPieceType: 0
+  PromotionType: 3
   ActiveMarker: {fileID: 4024050703582451617}
   CurrentTile: {fileID: 0}
   Renderer: {fileID: 6049034547633164806}
@@ -194,6 +195,7 @@ MonoBehaviour:
   Offsets: []
   Steps: 1
   TurnsUntilFire: 4
+  PromoteRow: 0
   HasMoved: 0
   SpriteArray:
   - {fileID: 21300000, guid: 5b7c019303150484097829cd6c90911d, type: 3}

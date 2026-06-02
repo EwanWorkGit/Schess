@@ -32,7 +32,7 @@ public class SceneSwitcher : MonoBehaviour
 #if UNITY_EDITOR
         EditorApplication.isPlaying = false;
 #else
-    Application.Quit;
+    Application.Quit();
 #endif
     }
     public void ExitToMenu()

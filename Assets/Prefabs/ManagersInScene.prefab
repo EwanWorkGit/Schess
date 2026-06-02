@@ -852,6 +852,7 @@ MonoBehaviour:
   OddColor: {r: 0.5568628, g: 0.06433827, b: 0.04313724, a: 1}
   Width: 8
   Height: 8
+  AnimationSpeed: 80
 --- !u!1 &7323723316561735064
 GameObject:
   m_ObjectHideFlags: 0

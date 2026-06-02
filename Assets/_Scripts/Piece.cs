@@ -1,18 +1,17 @@
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.Tilemaps;
 
-public enum PieceType { Pawn, Bishop, King, Queen, Knight, Rook, Assassin, Artillery }
+public enum PieceType { Pawn, Bishop, King, Queen, Knight, Rook, Assassin, Artillery, Pillar }
 
 //only for base pieces
 public enum MoveType { Directional, Positional }
 
 public class Piece : MonoBehaviour
 {
-    //how pieces can move, NOT ACTUAL STATE CHANGES
+    //how pieces decide to move, board/piece managers handle actual state changes
 
     public Team CurrentTeam;
-    public PieceType CurrentPieceType;
+    public PieceType CurrentPieceType, PromotionType = PieceType.Queen;
     public GameObject ActiveMarker;
     public BoardTile CurrentTile;
     public SpriteRenderer Renderer;
@@ -20,8 +19,7 @@ public class Piece : MonoBehaviour
     public MoveType CurrentMoveType;
     public Vector2Int[] Directions;
     public Vector2Int[] Offsets;
-    public int Steps = 1;
-    public int TurnsUntilFire = 4;
+    public int Steps = 1, TurnsUntilFire = 4, PromoteRow = 0;
     public bool HasMoved = false;
 
     [SerializeField] Sprite[] SpriteArray;
@@ -29,24 +27,7 @@ public class Piece : MonoBehaviour
 
     private void OnValidate()
     {
-        int index = (int)CurrentPieceType;
-        if (index < 0 || index >= SpriteArray.Length)
-        {
-            Renderer.sprite = DefaultSprite;
-        }
-        else
-        {
-            Renderer.sprite = SpriteArray[index];
-        }
-
-        if(CurrentTeam == Team.White)
-        {
-            Renderer.color = Color.white;
-        }
-        else if(CurrentTeam == Team.Black)
-        {
-            Renderer.color = Color.black;
-        }
+        UpdateSpriteAndColor();
     }
 
     private void Awake()
@@ -103,13 +84,43 @@ public class Piece : MonoBehaviour
 
         Piece selectedPiece = PieceManager.Instance.SelectedPiece;
 
-        //Decides if base should be used or not
+        //move and capture
         if (selectedPiece != null)
         {
             bool validEndTile = TileIsValid(selectedPiece.CurrentTile, clickedTile);
 
+            if(selectedPiece.CurrentPieceType == PieceType.Pawn && validEndTile)
+            {
+                if(clickType == ClickType.Move)
+                {
+                    boardManager.MovePieceToTile(clickedTile, pieceManager.SelectedPiece);
+                    //check if last row
+                    if(selectedPiece.CurrentTile.GridPos.y == PromoteRow)
+                    {
+                        PromotePiece();
+                    }
+                    turnManager.ChangeTeam(false);
+                    pieceManager.DeselectPiece();
+
+                    return true;
+                }
+                else if(clickType == ClickType.Capture)
+                {
+                    boardManager.CaptureOtherPiece(pieceManager.SelectedPiece, clickedPiece, clickedTile);
+                    boardManager.MovePieceToTile(clickedTile, pieceManager.SelectedPiece);
+                    //check if last row
+                    if (selectedPiece.CurrentTile.GridPos.y == PromoteRow)
+                    {
+                        PromotePiece();
+                    }
+                    turnManager.ChangeTeam(false);
+                    pieceManager.DeselectPiece();
+
+                    return true;
+                }
+            }
             //artillery capture
-            if (selectedPiece.CurrentPieceType == PieceType.Artillery && validEndTile)
+            else if (selectedPiece.CurrentPieceType == PieceType.Artillery && validEndTile)
             {
                 if (clickType == ClickType.Capture || (selectedPiece.IsInActionMode && clickType == ClickType.Move))
                 {
@@ -147,6 +158,35 @@ public class Piece : MonoBehaviour
 
         //base fallback
         return false;
+    }
+
+    void UpdateSpriteAndColor()
+    {
+        int index = (int)CurrentPieceType;
+        if (index < 0 || index >= SpriteArray.Length)
+        {
+            Renderer.sprite = DefaultSprite;
+        }
+        else
+        {
+            Renderer.sprite = SpriteArray[index];
+        }
+
+        if (CurrentTeam == Team.White)
+        {
+            Renderer.color = Color.white;
+        }
+        else if (CurrentTeam == Team.Black)
+        {
+            Renderer.color = Color.black;
+        }
+    }
+
+    void PromotePiece()
+    {
+        CurrentPieceType = PromotionType;
+        UpdateSpriteAndColor();
+        MovesetLibrary.Instance.DefinePiece(this);
     }
 
     public void MoveAndSpriteConfig()

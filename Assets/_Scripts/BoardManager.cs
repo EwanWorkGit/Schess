@@ -13,6 +13,7 @@ public class BoardManager : MonoBehaviour
     [SerializeField] Transform TileHolder;
     [SerializeField] Color EvenColor, OddColor;
     [SerializeField] int Width = 2, Height = 2;
+    [SerializeField] float AnimationSpeed = 5;
 
     Dictionary<BoardTile, int> TurnsUntilEffect = new Dictionary<BoardTile, int>();
 
@@ -89,20 +90,41 @@ public class BoardManager : MonoBehaviour
             return;
         }
 
-        //get valid tiles, check if place to move is inside list, move if true, end turn
         Vector2Int[] validPositions = piece.GetValidTargets(piece.CurrentTile);
         foreach(Vector2Int pos in validPositions)
         {
             if(pos == newTile.GridPos)
             {
+                Vector2 oldTilePos = piece.CurrentTile.transform.position;
                 piece.CurrentTile.OccupyingPiece = null;
-                newTile.OccupyingPiece = piece;
                 piece.CurrentTile = newTile;
+                newTile.OccupyingPiece = piece;
+
+                //a clean seperation of visuals and position is needed in order for this to be functional, otherwise it will be buggy
                 piece.transform.position = newTile.transform.position;
+                //StartCoroutine(MoveAnimation(piece.transform, oldTilePos, newTile.transform.position));
+
                 piece.HasMoved = true;
                 return;
             }
         }
+    }
+    IEnumerator MoveAnimation(Transform transToUpdate, Vector2 oldPos, Vector2 newPos)
+    {
+        float timeElapsed = 0f;
+        float distToNew = Vector2.Distance(transToUpdate.position, newPos);
+        while (Mathf.Abs(distToNew) > 0.01f)
+        {
+            float duration = (Vector2.Distance(newPos, oldPos) / AnimationSpeed);
+            if(transToUpdate != null)
+            {
+                transToUpdate.position = Vector2.Lerp(oldPos, newPos, timeElapsed / duration);
+            }
+            timeElapsed += Time.deltaTime;
+            Debug.Log("moving");
+            yield return null;
+        }
+        
     }
     public void CaptureOtherPiece(Piece attackPiece, Piece pieceToCapture, BoardTile captureTile)
     {

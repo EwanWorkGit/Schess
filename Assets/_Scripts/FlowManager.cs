@@ -16,7 +16,7 @@ public class FlowManager : MonoBehaviour
             piece.AssignClosestTileToCurrent();
             piece.transform.position = piece.CurrentTile.transform.position;
             piece.CurrentTile.OccupyingPiece = piece;
-            //piece.StartingTile = piece.CurrentTile;
+            piece.PromoteRow = piece.CurrentTeam == Team.White ? BoardManager.Tiles.GetLength(1)-1 : 0;
         }
         BoardManager.CachePieces(allPieces);
         WinManager.SetKings();

@@ -87,6 +87,10 @@ public class MovesetLibrary : MonoBehaviour
             piece.Steps = 3;
             piece.CurrentMoveType = MoveType.Directional;
         }
+        else if(piece.CurrentPieceType == PieceType.Pillar)
+        {
+            //Add pillar moves
+        }
 
         //POSITIONAL
         else if (piece.CurrentPieceType == PieceType.Knight)
