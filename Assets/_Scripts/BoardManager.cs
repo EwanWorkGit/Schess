@@ -99,6 +99,7 @@ public class BoardManager : MonoBehaviour
                 newTile.OccupyingPiece = piece;
                 piece.CurrentTile = newTile;
                 piece.transform.position = newTile.transform.position;
+                piece.HasMoved = true;
                 return;
             }
         }
@@ -176,7 +177,8 @@ public class BoardManager : MonoBehaviour
             Piece piece = pieceObj.GetComponent<Piece>();
             piece.CurrentPieceType = PieceCache[i].PieceType;
             piece.CurrentTile = PieceCache[i].CurrentTile;
-            piece.StartingTile = PieceCache[i].CurrentTile;
+            piece.HasMoved = false;
+            //piece.StartingTile = PieceCache[i].CurrentTile;
             piece.CurrentTeam = PieceCache[i].Team;
             piece.Renderer.color = PieceCache[i].Color;
 

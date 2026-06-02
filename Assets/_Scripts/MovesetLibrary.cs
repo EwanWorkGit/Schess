@@ -29,7 +29,7 @@ public class MovesetLibrary : MonoBehaviour
                 piece.Directions = new Vector2Int[] { new Vector2Int(0, -1) };
             }
 
-            piece.Steps = 2;
+            piece.Steps = 1;
             piece.CurrentMoveType = MoveType.Directional;
         }
         else if (piece.CurrentPieceType == PieceType.Bishop)
@@ -78,10 +78,13 @@ public class MovesetLibrary : MonoBehaviour
         {
             piece.Directions = new Vector2Int[]
             {
-                new Vector2Int(1,1), new Vector2Int(1,-1), new Vector2Int(-1,1), new Vector2Int(-1,-1)
+                //diagonals
+                new Vector2Int(1,1), new Vector2Int(1,-1), new Vector2Int(-1,1), new Vector2Int(-1,-1),
+                //straights
+                new Vector2Int(1,0), new Vector2Int(-1,0), new Vector2Int(0,1), new Vector2Int(0,-1)
             };
 
-            piece.Steps = 4;
+            piece.Steps = 3;
             piece.CurrentMoveType = MoveType.Directional;
         }
 
@@ -113,6 +116,8 @@ public class MovesetLibrary : MonoBehaviour
             piece.Steps = 100;
         }
     }
+
+    //moves dont change piece variables, only utilize them to display and give moves
     public void BaseMoves(Piece piece, BoardTile startTile, BoardManager boardManager, List<Vector2Int> validPositions)
     {
         if (piece.CurrentMoveType == MoveType.Directional)
@@ -126,6 +131,7 @@ public class MovesetLibrary : MonoBehaviour
                     //out of bounds check
                     if (!piece.IsInsideBounds(boardManager.Tiles.GetLength(0), boardManager.Tiles.GetLength(1), pos))
                     {
+                        Debug.Log("breaked for this direction.");
                         break;
                     }
 
@@ -168,16 +174,6 @@ public class MovesetLibrary : MonoBehaviour
     {
         foreach (Vector2Int dir in piece.Directions)
         {
-            //out of bounds
-            if (piece.StartingTile != piece.CurrentTile)
-            {
-                piece.Steps = 1;
-            }
-            else
-            {
-                piece.Steps = 2;
-            }
-
             for(int i = 1; i <= piece.Steps; i++)
             {
                 Vector2Int pos = startTile.GridPos + (dir * i);
@@ -191,14 +187,19 @@ public class MovesetLibrary : MonoBehaviour
                 {
                     validPositions.Add(pos);
                 }
+                else
+                {
+                    break;
+                }
             }   
         }
 
         //captures
+        //only y should be inverted but lets do that after double move
         Vector2Int[] captureOffsets = new Vector2Int[] { new Vector2Int(1, 1), new Vector2Int(-1, 1) };
         foreach (Vector2Int offset in captureOffsets)
         {
-            Vector2Int pos = startTile.GridPos + (piece.CurrentTeam == Team.White ? offset : -offset);
+            Vector2Int pos = startTile.GridPos + (piece.CurrentTeam == Team.White ? offset : new Vector2Int(offset.x, -offset.y));
             if (piece.IsInsideBounds(boardManager.Tiles.GetLength(0), boardManager.Tiles.GetLength(1), pos) && boardManager.Tiles[pos.x, pos.y].OccupyingPiece != null)
             {
                 validPositions.Add(pos);
@@ -210,7 +211,9 @@ public class MovesetLibrary : MonoBehaviour
         foreach (Vector2Int dir in piece.Directions)
         {
             bool passedPiece = false;
-            for (int i = 1; i <= piece.Steps; i++)
+            bool isStraightDir = dir.x != 0 && dir.y != 0;
+            int currentSteps = (isStraightDir) ? piece.Steps : 1;
+            for (int i = 1; i <= currentSteps; i++)
             {
                 Vector2Int pos = startTile.GridPos + (dir * i);
 

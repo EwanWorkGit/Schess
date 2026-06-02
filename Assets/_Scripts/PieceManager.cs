@@ -16,23 +16,34 @@ public class PieceManager : MonoBehaviour
     {
         if(Input.GetMouseButtonDown(1))
         {
+            DeselectPiece();
+        }
+
+        if(Input.GetKeyDown(KeyCode.A))
+        {
             if(SelectedPiece != null)
             {
                 UnDisplayMoves();
                 SelectedPiece.IsInActionMode = !SelectedPiece.IsInActionMode;
                 DisplayMoves();
-            }
+            }   
         }
     }
 
     public void SelectPiece(Piece piece)
     {
+        piece.IsInActionMode = false;
+        piece.ActiveMarker.SetActive(true);
         SelectedPiece = piece;
         DisplayMoves();
     }
     public void DeselectPiece()
     {
         UnDisplayMoves();
+        if(SelectedPiece != null)
+        {
+            SelectedPiece.ActiveMarker.SetActive(false);
+        }
         SelectedPiece = null;
     }
     public void UnDisplayMoves()

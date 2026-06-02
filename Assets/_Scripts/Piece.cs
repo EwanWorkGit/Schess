@@ -12,19 +12,20 @@ public class Piece : MonoBehaviour
     //how pieces can move, NOT ACTUAL STATE CHANGES
 
     public Team CurrentTeam;
-    public PieceType CurrentPieceType;    
-    public BoardTile CurrentTile, StartingTile;
+    public PieceType CurrentPieceType;
+    public GameObject ActiveMarker;
+    public BoardTile CurrentTile;
     public SpriteRenderer Renderer;
     public bool IsInActionMode = false;
     public MoveType CurrentMoveType;
     public Vector2Int[] Directions;
     public Vector2Int[] Offsets;
+    public int Steps = 1;
+    public int TurnsUntilFire = 4;
+    public bool HasMoved = false;
 
     [SerializeField] Sprite[] SpriteArray;
     [SerializeField] Sprite DefaultSprite;
-
-    public int Steps = 1;
-    int TurnsUntilFire = 2;
 
     private void OnValidate()
     {
@@ -52,6 +53,7 @@ public class Piece : MonoBehaviour
     {
         //only does internal stuff
         transform.name = $"{CurrentTeam} : {CurrentPieceType} : ({transform.position.x:F1}, {transform.position.y:F1})";
+        ActiveMarker.SetActive(false);
     }
     private void Start()
     {
@@ -77,6 +79,7 @@ public class Piece : MonoBehaviour
         {
             pieceManager.DeselectPiece();
             pieceManager.SelectPiece(clickedPiece);
+            Debug.Log($"Steps: {clickedPiece.Steps}");
         }
         else if(clickType == ClickType.Move && TileIsValid(pieceManager.SelectedPiece.CurrentTile, clickedTile))
         {
@@ -99,26 +102,46 @@ public class Piece : MonoBehaviour
         TurnManager turnManager = TurnManager.Instance;
 
         Piece selectedPiece = PieceManager.Instance.SelectedPiece;
-        if(selectedPiece == null)
-        {
-            Debug.Log("Selected piece null, doing reverting to base (no special selects for now!)");
-            return false;
-        }
 
-        bool validEndTile = TileIsValid(selectedPiece.CurrentTile, clickedTile);
         //Decides if base should be used or not
         if (selectedPiece != null)
         {
+            bool validEndTile = TileIsValid(selectedPiece.CurrentTile, clickedTile);
+
             //artillery capture
             if (selectedPiece.CurrentPieceType == PieceType.Artillery && validEndTile)
             {
-                if(clickType == ClickType.Capture || (selectedPiece.IsInActionMode && clickType == ClickType.Move))
+                if (clickType == ClickType.Capture || (selectedPiece.IsInActionMode && clickType == ClickType.Move))
                 {
                     boardManager.AddDelayedEffect(clickedTile, TurnsUntilFire);
                     turnManager.ChangeTeam(false);
                     pieceManager.DeselectPiece();
                     return true;
-                }        
+                }
+            }
+        }
+        
+        //select
+        if (clickType == ClickType.Select)
+        {
+            if ((selectedPiece == null && clickedPiece != null) || selectedPiece != null && clickedPiece != null && selectedPiece.CurrentTeam == clickedPiece.CurrentTeam)
+            {
+                if (clickedPiece.CurrentPieceType == PieceType.Pawn)
+                {
+                    if (!HasMoved)
+                    {
+                        Debug.Log("2 steps registered");
+                        clickedPiece.Steps = 2;
+                    }
+                    else
+                    {
+                        clickedPiece.Steps = 1;
+                    }
+
+                    pieceManager.DeselectPiece();
+                    pieceManager.SelectPiece(clickedPiece);
+                    return true;
+                }
             }
         }
 
