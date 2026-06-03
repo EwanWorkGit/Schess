@@ -39,11 +39,10 @@ public class WinManager : MonoBehaviour
                 }
             }
             
+            //team which has lost
             if (keyValue.Value.Count <= 0)
             {
                 teamsToRemove.Add(keyValue.Key);
-                //this team has lost
-                //count active teams, when it reaches one, display that team
             }
         }
 
@@ -79,6 +78,21 @@ public class WinManager : MonoBehaviour
         }
     }
 
+    public void Surrender()
+    {
+        Team activeTeam = TurnManager.Instance.ActiveTeam;
+        foreach(var kvp in KingsInEachTeam.ToArray())
+        {
+            if(kvp.Key == activeTeam)
+            {
+                foreach(Piece piece in kvp.Value)
+                {
+                    Destroy(piece.gameObject);
+                    KingsInEachTeam.Remove(activeTeam);
+                }
+            }
+        }
+    }
     public void Rematch()
     {
         BoardManager.Instance.ResetPieces();

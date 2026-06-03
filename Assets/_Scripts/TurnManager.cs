@@ -48,7 +48,6 @@ public class TurnManager : MonoBehaviour
         ActiveTeam = (Team)TeamIndex;
         OnTurnChange?.Invoke();
     }
-
     public void ResetTurn()
     {
         TeamIndex = 0;
